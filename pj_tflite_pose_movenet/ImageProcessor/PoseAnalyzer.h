@@ -5,40 +5,57 @@
 #include <cstdint>
 #include <cmath>
 #include <string>
-#include <vector>
+#include <deque>
 #include <array>
 #include <memory>
 
 class PoseAnalyzer {
+
 public:
-	enum {
-		POSE_NORMAL = 0,
-		POSE_ARM_FORWARD_LEFT,	/* Put a left arm forward */
-		POSE_ARM_FORWARD_RIGHT,	/* Put a right arm forward */
-		POSE_ARM_FORWARD_BOTH,	/* Put both armss forward */
-		POSE_ARM_SPREAD_LEFT,	/* Spread a left arm out to the left */
-		POSE_ARM_SPREAD_RIGHT,	/* Spread a right arm out to the right */
-		POSE_ARM_SPREAD_BOTH,	/* Spread both arms out to the side */
-		POSE_ARM_RAISE_LEFT,	/* Raise a left arm */
-		POSE_ARM_RAISE_RIGHT,	/* Raise a right arm */
-		POSE_ARM_RAISE_BOTH,	/* Raise both arms */
-	};
-	
-	enum {
-		BODY_NORMAL = 0,
-		BODY_CROUCHING,
-	};
+	static constexpr int32_t NUM_FILTERING = 10;
 
 	enum {
 		RET_OK = 0,
 		RET_ERR = -1,
 	};
 
+
+	typedef struct RESULT_ {
+		bool armLeftRaised;
+		bool armRightRaised;
+		bool armLeftSpread;
+		bool armRightSpread;
+		bool armLeftForward;
+		bool armRightForward;
+		bool crunching;
+		float x;	// -1.0 ~ 0.0(center) ~ 1.0
+		float y;	// -1.0 ~ 0.0(center) ~ 1.0
+		RESULT_()
+			: armLeftRaised(false)
+			, armRightRaised(false)
+			, armLeftSpread(false)
+			, armRightSpread(false)
+			, armLeftForward(false)
+			, armRightForward(false)
+			, crunching(false)
+			, x(0)
+			, y(0)
+		{}
+	} RESULT;
+
 public:
 	PoseAnalyzer() {}
 	~PoseAnalyzer() {}
 	
-	int32_t analyze(const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList, int32_t& arm, int32_t& body);
+	int32_t analyze(const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList, PoseAnalyzer::RESULT& result);
+
+private:
+	float calculateLength(const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList, int32_t index0, int32_t index1);
+	float calcualteAverageLength(const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList, std::vector<std::pair<int32_t, int32_t>> indexPairList);
+	void  filterResult(const PoseAnalyzer::RESULT& currentResult, PoseAnalyzer::RESULT& result);
+
+private:
+	std::deque<RESULT> m_resultList;
 };
 
 #endif

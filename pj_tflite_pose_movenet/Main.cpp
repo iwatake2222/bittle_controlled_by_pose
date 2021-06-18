@@ -67,7 +67,11 @@ int32_t main()
 	int32_t originalImageHeight = 480;
 
 	static cv::VideoCapture cap;
+#ifdef _WIN32
+	cap = cv::VideoCapture(cv::CAP_DSHOW + 0);
+#else
 	cap = cv::VideoCapture(0);
+#endif
 	cap.set(cv::CAP_PROP_FRAME_WIDTH, originalImageWidth);
 	cap.set(cv::CAP_PROP_FRAME_HEIGHT, originalImageHeight);
 	// cap.set(cv::CAP_PROP_FOURCC, cv::VideoWriter::fourcc('B', 'G', 'R', '3'));

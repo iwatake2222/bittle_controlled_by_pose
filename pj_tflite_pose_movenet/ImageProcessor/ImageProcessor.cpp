@@ -26,6 +26,29 @@
 #define PRINT(...)   COMMON_HELPER_PRINT(TAG, __VA_ARGS__)
 #define PRINT_E(...) COMMON_HELPER_PRINT_E(TAG, __VA_ARGS__)
 
+static const std::vector<std::pair<int32_t, int32_t>> jointLineList {
+	/* face */
+	{0, 2},
+	{2, 4},
+	{0, 1},
+	{1, 3},
+	/* body */
+	{6, 5},
+	{5, 11},
+	{11, 12},
+	{12, 6},
+	/* arm */
+	{6, 8},
+	{8, 10},
+	{5, 7},
+	{7, 9},
+	/* leg */
+	{12, 14},
+	{14, 16},
+	{11, 13},
+	{13, 15},
+};
+
 /*** Global variable ***/
 std::unique_ptr<PoseEngine> s_poseEngine;
 PoseAnalyzer s_poseAnalyzer;
@@ -85,28 +108,10 @@ int32_t ImageProcessor_command(int32_t cmd)
 	}
 }
 
-static const std::vector<std::pair<int32_t, int32_t>> jointLineList {
-	/* face */
-	{0, 2},
-	{2, 4},
-	{0, 1},
-	{1, 3},
-	/* body */
-	{6, 5},
-	{5, 11},
-	{11, 12},
-	{12, 6},
-	/* arm */
-	{6, 8},
-	{8, 10},
-	{5, 7},
-	{7, 9},
-	/* leg */
-	{12, 14},
-	{14, 16},
-	{11, 13},
-	{13, 15},
-};
+std::string decideCommand(PoseAnalyzer::RESULT poseResult)
+{
+	return "";
+}
 
 int32_t ImageProcessor_process(cv::Mat* mat, OUTPUT_PARAM* outputParam)
 {
@@ -127,16 +132,24 @@ int32_t ImageProcessor_process(cv::Mat* mat, OUTPUT_PARAM* outputParam)
 	const auto& partList = result.poseKeypointCoords[0];
 
 	/* Analyze Pose */
-	int32_t armPose;
-	int32_t bodyPose;
-	(void)s_poseAnalyzer.analyze(partList, scoreList, armPose, bodyPose);
+	PoseAnalyzer::RESULT poseResult;
+	(void)s_poseAnalyzer.analyze(partList, scoreList, poseResult);
+	std::string command = decideCommand(poseResult);
 
 	/* Draw the result */
 	drawPose(originalMat, partList, scoreList);
 
 	char text[32];
-	snprintf(text, sizeof(text), "arm = %d, body = %d", armPose, bodyPose);
+	snprintf(text, sizeof(text), "x = %.2f", poseResult.x);
+	cv::putText(originalMat, text, cv::Point(50, 20), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
+	snprintf(text, sizeof(text), "raise = %d %d", poseResult.armLeftRaised, poseResult.armRightRaised);
 	cv::putText(originalMat, text, cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
+	snprintf(text, sizeof(text), "spread = %d %d", poseResult.armLeftSpread, poseResult.armRightSpread);
+	cv::putText(originalMat, text, cv::Point(50, 80), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
+	snprintf(text, sizeof(text), "forward = %d %d", poseResult.armLeftForward, poseResult.armRightForward);
+	cv::putText(originalMat, text, cv::Point(50, 110), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
+	snprintf(text, sizeof(text), "crunching = %d", poseResult.crunching);
+	cv::putText(originalMat, text, cv::Point(50, 140), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
 
 	/* Return the results */
 	outputParam->timePreProcess = result.timePreProcess;
