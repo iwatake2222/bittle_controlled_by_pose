@@ -30,6 +30,7 @@ public:
 		bool crunching;
 		float x;	// -1.0 ~ 0.0(center) ~ 1.0
 		float y;	// -1.0 ~ 0.0(center) ~ 1.0
+		float faceScore;
 		RESULT_()
 			: armLeftRaised(false)
 			, armRightRaised(false)
@@ -40,6 +41,7 @@ public:
 			, crunching(false)
 			, x(0)
 			, y(0)
+			, faceScore(0)
 		{}
 	} RESULT;
 

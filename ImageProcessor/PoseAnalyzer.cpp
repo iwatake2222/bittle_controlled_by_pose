@@ -50,6 +50,8 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> partLis
     const float armDistanceThreshold = armLength / 3;
     const float bodyDistanceThreshold = bodyLength / 3;
 
+    /*** Check arm raised ***/
+    /* hand comes above sholder */
     if ((scoreList[10] > THRESHOLD_SCORE && scoreList[8] > THRESHOLD_SCORE && scoreList[6] > THRESHOLD_SCORE)
         && (GET_Y_POS(10) + armDistanceThreshold < GET_Y_POS(6))) {
         currentResult.armLeftRaised = true;
@@ -60,6 +62,8 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> partLis
         currentResult.armRightRaised = true;
     }
 
+    /*** Check arm spread ***/
+    /* the distance b/w hand and sholder is big */
     if ((scoreList[10] > THRESHOLD_SCORE && scoreList[8] > THRESHOLD_SCORE && scoreList[6] > THRESHOLD_SCORE)
         && (GET_X_POS(10) + armDistanceThreshold < GET_X_POS(8))
         && (GET_X_POS(8) + armDistanceThreshold < GET_X_POS(6))
@@ -74,6 +78,8 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> partLis
         currentResult.armRightSpread = true;
     }
 
+    /*** Check arm forward ***/
+    /* the distance b/w hand and sholder is small */
     if ((scoreList[10] > THRESHOLD_SCORE && scoreList[6] > THRESHOLD_SCORE)
         && ((std::abs)(GET_Y_POS(10) - GET_Y_POS(6)) < bodyDistanceThreshold && (std::abs)(GET_X_POS(10) - GET_X_POS(6)) < bodyDistanceThreshold)) {
         currentResult.armLeftForward = true;
@@ -84,6 +90,9 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> partLis
         currentResult.armRightForward = true;
     }
 
+    /*** Check crunching ***/
+    /* knee comes above the waist */
+    /* lower parts of leg don't appear */
     float waistY = -1;
     if (scoreList[12] > THRESHOLD_SCORE) {
         waistY = GET_Y_POS(12);
@@ -94,11 +103,19 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> partLis
         waistY /= 2;
     }
     if ( ((scoreList[14] > THRESHOLD_SCORE) && (GET_Y_POS(14) < waistY + bodyDistanceThreshold))
-        || ((scoreList[13] > THRESHOLD_SCORE) && (GET_Y_POS(13) < waistY + bodyDistanceThreshold))) {
+        || ((scoreList[13] > THRESHOLD_SCORE) && (GET_Y_POS(13) < waistY + bodyDistanceThreshold))
+        || (scoreList[13] + scoreList[14] + scoreList[15] + scoreList[16] < 4 * THRESHOLD_SCORE * 0.8f)) {
         currentResult.crunching = true;
     }
 
-    
+    /*** Check score ***/
+    /* use the current score of nose */
+    currentResult.faceScore = scoreList[0];
+
+    /*** Calclate face position [-1, 1] ***/
+    /* use nose if it appears */
+    /* or, use the center of sholder */
+    /* or, use the previous position */
     currentResult.x = GET_X_POS(0);
     currentResult.y = GET_Y_POS(0);
     if (currentResult.x < 0) {
@@ -110,9 +127,9 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> partLis
     if (currentResult.x >= 0) {
         currentResult.x = (currentResult.x - 0.5) * 2;
         currentResult.y = (currentResult.y - 0.5) * 2;
-    } else {
-        currentResult.x = 0;
-        currentResult.y = 0;
+    } else if (m_resultList.size() > 0) {
+        currentResult.x = m_resultList.back().x;    // use the previous result
+        currentResult.y = m_resultList.back().y;
     }
 
     filterResult(currentResult, result);
@@ -135,6 +152,7 @@ void PoseAnalyzer::filterResult(const RESULT& currentResult, RESULT& result)
     int32_t numArmLeftForward = 0;
     int32_t numArmRightForward = 0;
     int32_t numCrunching = 0;
+    float avgFaceScore = 0;
 
     for (const auto& r : m_resultList) {
         if (r.armLeftRaised) numArmLeftRaised++;
@@ -144,6 +162,7 @@ void PoseAnalyzer::filterResult(const RESULT& currentResult, RESULT& result)
         if (r.armLeftForward) numArmLeftForward++;
         if (r.armRightForward) numArmRightForward++;
         if (r.crunching) numCrunching++;
+        avgFaceScore += r.faceScore;
     }
 
     if (numArmLeftRaised >= NUM_THRESHOLD) result.armLeftRaised = true;
@@ -153,6 +172,7 @@ void PoseAnalyzer::filterResult(const RESULT& currentResult, RESULT& result)
     if (numArmLeftForward >= NUM_THRESHOLD) result.armLeftForward = true;
     if (numArmRightForward >= NUM_THRESHOLD) result.armRightForward = true;
     if (numCrunching >= NUM_THRESHOLD) result.crunching = true;
+    result.faceScore = avgFaceScore / m_resultList.size();
 
     result.x = currentResult.x;
     result.y = currentResult.y;

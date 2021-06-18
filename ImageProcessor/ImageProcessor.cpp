@@ -19,6 +19,7 @@
 #include "CommonHelper.h"
 #include "PoseEngine.h"
 #include "PoseAnalyzer.h"
+#include "CommandDecider.h"
 #include "ImageProcessor.h"
 
 /*** Macro ***/
@@ -52,6 +53,7 @@ static const std::vector<std::pair<int32_t, int32_t>> jointLineList {
 /*** Global variable ***/
 std::unique_ptr<PoseEngine> s_poseEngine;
 PoseAnalyzer s_poseAnalyzer;
+CommandDecider s_commandDecider;
 
 /*** Function ***/
 static cv::Scalar createCvColor(int32_t b, int32_t g, int32_t r) {
@@ -108,10 +110,6 @@ int32_t ImageProcessor_command(int32_t cmd)
 	}
 }
 
-std::string decideCommand(PoseAnalyzer::RESULT poseResult)
-{
-	return "";
-}
 
 int32_t ImageProcessor_process(cv::Mat* mat, OUTPUT_PARAM* outputParam)
 {
@@ -134,13 +132,13 @@ int32_t ImageProcessor_process(cv::Mat* mat, OUTPUT_PARAM* outputParam)
 	/* Analyze Pose */
 	PoseAnalyzer::RESULT poseResult;
 	(void)s_poseAnalyzer.analyze(partList, scoreList, poseResult);
-	std::string command = decideCommand(poseResult);
+	std::string command = s_commandDecider.decide(poseResult);
 
 	/* Draw the result */
 	drawPose(originalMat, partList, scoreList);
 
 	char text[32];
-	snprintf(text, sizeof(text), "x = %.2f", poseResult.x);
+	snprintf(text, sizeof(text), "score = %.3f, x = %.2f", poseResult.faceScore, poseResult.x);
 	cv::putText(originalMat, text, cv::Point(50, 20), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
 	snprintf(text, sizeof(text), "raise = %d %d", poseResult.armLeftRaised, poseResult.armRightRaised);
 	cv::putText(originalMat, text, cv::Point(50, 50), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
@@ -150,11 +148,13 @@ int32_t ImageProcessor_process(cv::Mat* mat, OUTPUT_PARAM* outputParam)
 	cv::putText(originalMat, text, cv::Point(50, 110), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
 	snprintf(text, sizeof(text), "crunching = %d", poseResult.crunching);
 	cv::putText(originalMat, text, cv::Point(50, 140), cv::FONT_HERSHEY_SIMPLEX, 0.8, createCvColor(255, 0, 0), 2);
+	cv::putText(originalMat, command.c_str(), cv::Point(50, 200), cv::FONT_HERSHEY_SIMPLEX, 1.0, createCvColor(255, 0, 0), 2);
 
 	/* Return the results */
 	outputParam->timePreProcess = result.timePreProcess;
 	outputParam->timeInference = result.timeInference;
 	outputParam->timePostProcess = result.timePostProcess;
+	snprintf(outputParam->command, sizeof(outputParam->command), "%s", command.c_str());
 
 	return 0;
 }
