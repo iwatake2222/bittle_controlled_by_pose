@@ -19,7 +19,7 @@
 /*** Macro ***/
 #define IMAGE_NAME   RESOURCE_DIR"/body_female.jpg"
 #define WORK_DIR     RESOURCE_DIR
-#define LOOP_NUM_FOR_TIME_MEASUREMENT 10
+#define LOOP_NUM_FOR_TIME_MEASUREMENT 0
 
 
 int32_t main()
