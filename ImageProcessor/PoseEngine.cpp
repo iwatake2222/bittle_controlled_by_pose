@@ -189,7 +189,7 @@ int32_t PoseEngine::invoke(const cv::Mat& originalMat, RESULT& result)
 	float* valFloat = m_outputTensorList[0].getDataAsFloat();
 	std::vector<float> poseKeypointScores;	// z
 	std::vector<std::pair<float,float>> poseKeypointCoords;	// x, y
-	for (int32_t partIndex = 0; partIndex < m_outputTensorList[0].tensorDims.width; partIndex++) {
+	for (int32_t jointIndex = 0; jointIndex < m_outputTensorList[0].tensorDims.width; jointIndex++) {
 		// PRINT("%f, %f, %f\n", valFloat[1], valFloat[0], valFloat[2]);
 		poseKeypointCoords.push_back(std::pair<float,float>(valFloat[1], valFloat[0]));
 		poseKeypointScores.push_back(valFloat[2]);

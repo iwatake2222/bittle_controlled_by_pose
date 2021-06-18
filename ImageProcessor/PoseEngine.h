@@ -25,17 +25,14 @@ public:
 
 	typedef struct RESULT_ {
 		std::vector<float>                                  poseScores;			// [body]
-		std::vector<std::vector<float>>                     poseKeypointScores;	// [body][part]
-		std::vector<std::vector<std::pair<float, float>>>   poseKeypointCoords;	// [body][part][x, y] (0 - 1.0)
+		std::vector<std::vector<float>>                     poseKeypointScores;	// [body][joint]
+		std::vector<std::vector<std::pair<float, float>>>   poseKeypointCoords;	// [body][joint][x, y] (0 - 1.0)
 		double    timePreProcess;		// [msec]
 		double    timeInference;		// [msec]
 		double    timePostProcess;	// [msec]
 		RESULT_() : timePreProcess(0), timeInference(0), timePostProcess(0)
 		{}
 	} RESULT;
-
-private:
-	static constexpr bool WITH_BACKGROUND = true;
 
 public:
 	PoseEngine() {}

@@ -21,8 +21,8 @@
 #define PRINT_E(...) COMMON_HELPER_PRINT_E(TAG, __VA_ARGS__)
 
 #define THRESHOLD_SCORE 0.2f
-#define GET_X_POS(index) ((scoreList[index] < THRESHOLD_SCORE) ? -1 : partList[index].first)
-#define GET_Y_POS(index) ((scoreList[index] < THRESHOLD_SCORE) ? -1 : partList[index].second)
+#define GET_X_POS(index) ((scoreList[index] < THRESHOLD_SCORE) ? -1 : jointList[index].first)
+#define GET_Y_POS(index) ((scoreList[index] < THRESHOLD_SCORE) ? -1 : jointList[index].second)
 
 static const std::vector<std::pair<int32_t, int32_t>> ARM_LIST = {
     {10, 8},
@@ -39,12 +39,12 @@ static const std::vector<std::pair<int32_t, int32_t>> BODY_LIST = {
 };
 
 /*** Function ***/
-int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList, RESULT& result)
+int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> jointList, std::vector<float> scoreList, RESULT& result)
 {
     RESULT currentResult;
 
-    float armLength = calcualteAverageLength(partList, scoreList, ARM_LIST);
-    float bodyLength = calcualteAverageLength(partList, scoreList, BODY_LIST);
+    float armLength = calcualteAverageLength(jointList, scoreList, ARM_LIST);
+    float bodyLength = calcualteAverageLength(jointList, scoreList, BODY_LIST);
     if (armLength < 0) armLength = bodyLength;
     if (bodyLength < 0) bodyLength = armLength;
     const float armDistanceThreshold = armLength / 3;
@@ -125,8 +125,8 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> partLis
         }
     }
     if (currentResult.x >= 0) {
-        currentResult.x = (currentResult.x - 0.5) * 2;
-        currentResult.y = (currentResult.y - 0.5) * 2;
+        currentResult.x = (currentResult.x - 0.5f) * 2;
+        currentResult.y = (currentResult.y - 0.5f) * 2;
     } else if (m_resultList.size() > 0) {
         currentResult.x = m_resultList.back().x;    // use the previous result
         currentResult.y = m_resultList.back().y;
@@ -144,7 +144,7 @@ void PoseAnalyzer::filterResult(const RESULT& currentResult, RESULT& result)
         m_resultList.pop_front();
     }
 
-    const int32_t NUM_THRESHOLD = m_resultList.size() * 0.8;
+    const int32_t NUM_THRESHOLD = static_cast<int32_t>(m_resultList.size() * 0.8);
     int32_t numArmLeftRaised = 0;
     int32_t numArmRightRaised = 0;
     int32_t numArmLeftSpread = 0;
@@ -178,7 +178,7 @@ void PoseAnalyzer::filterResult(const RESULT& currentResult, RESULT& result)
     result.y = currentResult.y;
 }
 
-float PoseAnalyzer::calculateLength(const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList, int32_t index0, int32_t index1)
+float PoseAnalyzer::calculateLength(const std::vector<std::pair<float, float>> jointList, std::vector<float> scoreList, int32_t index0, int32_t index1)
 {
     float length = -1;
     if (scoreList[index0] > THRESHOLD_SCORE && scoreList[index1] > THRESHOLD_SCORE) {
@@ -188,11 +188,11 @@ float PoseAnalyzer::calculateLength(const std::vector<std::pair<float, float>> p
     return length;
 }
 
-float PoseAnalyzer::calcualteAverageLength(const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList, std::vector<std::pair<int32_t, int32_t>> indexPairList)
+float PoseAnalyzer::calcualteAverageLength(const std::vector<std::pair<float, float>> jointList, std::vector<float> scoreList, std::vector<std::pair<int32_t, int32_t>> indexPairList)
 {
     std::vector<float> lengthList;
     for (const auto& indexPair : indexPairList) {
-        lengthList.push_back(calculateLength(partList, scoreList, indexPair.first, indexPair.second));
+        lengthList.push_back(calculateLength(jointList, scoreList, indexPair.first, indexPair.second));
     }
 
     float sum = 0;

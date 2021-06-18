@@ -64,7 +64,7 @@ static cv::Scalar createCvColor(int32_t b, int32_t g, int32_t r) {
 #endif
 }
 
-void drawPose(cv::Mat& mat, const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList);
+void drawPose(cv::Mat& mat, const std::vector<std::pair<float, float>> jointList, std::vector<float> scoreList);
 
 int32_t ImageProcessor_initialize(const INPUT_PARAM* inputParam)
 {
@@ -127,15 +127,15 @@ int32_t ImageProcessor_process(cv::Mat* mat, OUTPUT_PARAM* outputParam)
 
 	/* note: we have only one body with this model */
 	const auto& scoreList = result.poseKeypointScores[0];
-	const auto& partList = result.poseKeypointCoords[0];
+	const auto& jointList = result.poseKeypointCoords[0];
 
 	/* Analyze Pose */
 	PoseAnalyzer::RESULT poseResult;
-	(void)s_poseAnalyzer.analyze(partList, scoreList, poseResult);
+	(void)s_poseAnalyzer.analyze(jointList, scoreList, poseResult);
 	std::string command = s_commandDecider.decide(poseResult);
 
 	/* Draw the result */
-	drawPose(originalMat, partList, scoreList);
+	drawPose(originalMat, jointList, scoreList);
 
 	char text[32];
 	snprintf(text, sizeof(text), "score = %.3f, x = %.2f", poseResult.faceScore, poseResult.x);
@@ -159,24 +159,24 @@ int32_t ImageProcessor_process(cv::Mat* mat, OUTPUT_PARAM* outputParam)
 	return 0;
 }
 
-void drawPose(cv::Mat& mat, const std::vector<std::pair<float, float>> partList, std::vector<float> scoreList)
+void drawPose(cv::Mat& mat, const std::vector<std::pair<float, float>> jointList, std::vector<float> scoreList)
 {
 	constexpr float scoreThreshold = 0.2f;
-	int32_t partNum = static_cast<int32_t>(partList.size());
+	int32_t jointNum = static_cast<int32_t>(jointList.size());
 
 	for (const auto& jointLine : jointLineList) {
 		if (scoreList[jointLine.first] >= scoreThreshold && scoreList[jointLine.second] >= scoreThreshold) {
-			int32_t x0 = static_cast<int32_t>(partList[jointLine.first].first * mat.cols);
-			int32_t y0 = static_cast<int32_t>(partList[jointLine.first].second * mat.rows);
-			int32_t x1 = static_cast<int32_t>(partList[jointLine.second].first * mat.cols);
-			int32_t y1 = static_cast<int32_t>(partList[jointLine.second].second * mat.rows);
+			int32_t x0 = static_cast<int32_t>(jointList[jointLine.first].first * mat.cols);
+			int32_t y0 = static_cast<int32_t>(jointList[jointLine.first].second * mat.rows);
+			int32_t x1 = static_cast<int32_t>(jointList[jointLine.second].first * mat.cols);
+			int32_t y1 = static_cast<int32_t>(jointList[jointLine.second].second * mat.rows);
 			cv::line(mat, cv::Point(x0, y0), cv::Point(x1, y1), createCvColor(200, 200, 200), 2);
 		}
 	}
 
-	for (int32_t i = 0; i < partNum; i++) {
-		int32_t x = static_cast<int32_t>(partList[i].first * mat.cols);
-		int32_t y = static_cast<int32_t>(partList[i].second * mat.rows);
+	for (int32_t i = 0; i < jointNum; i++) {
+		int32_t x = static_cast<int32_t>(jointList[i].first * mat.cols);
+		int32_t y = static_cast<int32_t>(jointList[i].second * mat.rows);
 		float score = scoreList[i];
 		if (score >= scoreThreshold) {
 			cv::circle(mat, cv::Point(x, y), 5, createCvColor(0, 255, 0), -1);
