@@ -5,7 +5,7 @@ set(ProjectName "main")
 project(${ProjectName})
 
 # Select build system and set compile options
-include(${CMAKE_CURRENT_LIST_DIR}/../InferenceHelper/CommonHelper/cmakes/build_setting.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/InferenceHelper/CommonHelper/cmakes/build_setting.cmake)
 
 # Create executable file
 add_executable(${ProjectName} Main.cpp)
@@ -21,7 +21,7 @@ target_include_directories(${ProjectName} PUBLIC ${OpenCV_INCLUDE_DIRS})
 target_link_libraries(${ProjectName} ${OpenCV_LIBS})
 
 # Copy resouce
-file(COPY ${CMAKE_CURRENT_LIST_DIR}/../resource DESTINATION ${CMAKE_BINARY_DIR}/)
+file(COPY ${CMAKE_CURRENT_LIST_DIR}/resource DESTINATION ${CMAKE_BINARY_DIR}/)
 add_definitions(-DRESOURCE_DIR="${CMAKE_BINARY_DIR}/resource/")
 
 set(SPEED_TEST_ONLY on CACHE BOOL "Speed test only (don't use camera)? [on/off]")
