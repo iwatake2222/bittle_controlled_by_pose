@@ -32,12 +32,15 @@ std::string CommandDecider::decide(PoseAnalyzer::RESULT& poseResult)
     case STATUS_MOVING_FORWARD:
         if (poseResult.faceScore > 0.3) {
             status = STATUS_MOVING_FORWARD;
+        }
+        if (poseResult.faceScore <= 0.3) {
+            status = STATUS_NONE;
         } 
         if (poseResult.x > 0.3) {
-            status = STATUS_MOVING_LEFT;
+            status = STATUS_MOVING_RIGHT;
         }
         if (poseResult.x < -0.3) {
-            status = STATUS_MOVING_RIGHT;
+            status = STATUS_MOVING_LEFT;
         }
         if (poseResult.armLeftRaised) {
             status = STATUS_MOVING_BACKWARD;
@@ -113,7 +116,7 @@ std::string CommandDecider::decide(PoseAnalyzer::RESULT& poseResult)
         switch (m_status) {
         default:
         case STATUS_NONE:
-            cmd = "";
+            cmd = "kbalance";
             break;
         case STATUS_MOVING_FORWARD:
             cmd = "kcrF";
