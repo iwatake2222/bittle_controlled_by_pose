@@ -8,7 +8,7 @@ project(${ProjectName})
 include(${CMAKE_CURRENT_LIST_DIR}/InferenceHelper/CommonHelper/cmakes/build_setting.cmake)
 
 # Create executable file
-add_executable(${ProjectName} Main.cpp)
+add_executable(${ProjectName} Main.cpp Uart.cpp Uart.h)
 
 # Link ImageProcessor module
 add_subdirectory(./ImageProcessor ImageProcessor)

@@ -182,8 +182,8 @@ float PoseAnalyzer::calculateLength(const std::vector<std::pair<float, float>> j
 {
     float length = -1;
     if (scoreList[index0] > THRESHOLD_SCORE && scoreList[index1] > THRESHOLD_SCORE) {
-        length = std::powf(GET_X_POS(index0) - GET_X_POS(index1), 2) + std::powf(GET_Y_POS(index0) - GET_Y_POS(index1), 2);
-        length = std::sqrtf(length);
+        length = std::pow(GET_X_POS(index0) - GET_X_POS(index1), 2) + std::pow(GET_Y_POS(index0) - GET_Y_POS(index1), 2);
+        length = std::sqrt(length);
     }
     return length;
 }

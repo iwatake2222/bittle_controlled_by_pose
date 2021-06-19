@@ -180,9 +180,11 @@ void drawPose(cv::Mat& mat, const std::vector<std::pair<float, float>> jointList
 		float score = scoreList[i];
 		if (score >= scoreThreshold) {
 			cv::circle(mat, cv::Point(x, y), 5, createCvColor(0, 255, 0), -1);
-			char text[4];
+#if 0
+			char text[16];
 			snprintf(text, sizeof(text), "%d", i);
 			cv::putText(mat, text, cv::Point(x, y), cv::FONT_HERSHEY_SIMPLEX, 0.5, createCvColor(255, 0, 0), 1);
+#endif
 		}
 	}
 }

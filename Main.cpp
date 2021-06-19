@@ -15,16 +15,22 @@
 
 /* for My modules */
 #include "ImageProcessor.h"
+#include "Uart.h"
 
 /*** Macro ***/
 #define IMAGE_NAME   RESOURCE_DIR"/body_female.jpg"
 #define WORK_DIR     RESOURCE_DIR
 #define LOOP_NUM_FOR_TIME_MEASUREMENT 0
 
-
 int32_t main()
 {
 	/*** Initialize ***/
+	/* Initialize uart */
+	Uart uart;
+	if (uart.initialize("/dev/serial0") < 0) {
+		printf("[ERR] uart.initialize\n");
+	}
+
 	/* Initialize image processor library */
 	INPUT_PARAM inputParam;
 	snprintf(inputParam.workDir, sizeof(inputParam.workDir), WORK_DIR);
@@ -68,17 +74,30 @@ int32_t main()
 		if (outputParam.command[0] != 0 && strncmp(command, outputParam.command, sizeof(command)) != 0) {
 			strncpy(command, outputParam.command, sizeof(command));
 			printf("CMD = %s\n", command);
+			if (uart.send(command) < 0) {
+				printf("[ERR] uart.send\n");
+			}
 		}
 
-		const auto& timeAll1 = std::chrono::steady_clock::now();
-		//printf("Total time = %.3lf [msec]\n", (timeAll1 - timeAll0).count() / 1000000.0);
-		//printf("Capture time = %.3lf [msec]\n", (timeCap1 - timeCap0).count() / 1000000.0);
-		//printf("Image processing time = %.3lf [msec]\n", (timeProcess1 - timeProcess0).count() / 1000000.0);
-		//printf("========\n");
+		// char buffer[100];
+		// int32_t recvLen = uart.recv(buffer, sizeof(buffer));
+		// if (recvLen < 0) {
+		// 	printf("[ERR] uart.recv\n");
+		// } else {
+		// 	buffer[recvLen] = '\0';
+		// 	printf("%s", buffer);
+		// }
+
+		// const auto& timeAll1 = std::chrono::steady_clock::now();
+		// printf("Total time = %.3lf [msec]\n", (timeAll1 - timeAll0).count() / 1000000.0);
+		// printf("Capture time = %.3lf [msec]\n", (timeCap1 - timeCap0).count() / 1000000.0);
+		// printf("Image processing time = %.3lf [msec]\n", (timeProcess1 - timeProcess0).count() / 1000000.0);
+		// printf("========\n");
 	}
 
 	/* Fianlize image processor library */
 	ImageProcessor_finalize();
+	uart.finalize();
 
 	return 0;
 }
