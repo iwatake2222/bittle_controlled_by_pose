@@ -36,10 +36,10 @@ std::string CommandDecider::decide(PoseAnalyzer::RESULT& poseResult)
         if (poseResult.faceScore <= 0.3) {
             status = STATUS_NONE;
         } 
-        if (poseResult.x > 0.3) {
+        if (poseResult.x > 0.5) {
             status = STATUS_MOVING_RIGHT;
         }
-        if (poseResult.x < -0.3) {
+        if (poseResult.x < -0.5) {
             status = STATUS_MOVING_LEFT;
         }
         if (poseResult.armLeftRaised) {
@@ -55,14 +55,19 @@ std::string CommandDecider::decide(PoseAnalyzer::RESULT& poseResult)
             status = STATUS_MOVING_STOP;
         }
         break;
+    case STATUS_MOVING_RIGHT:
     case STATUS_MOVING_LEFT:
-        if (poseResult.x < 0.1) {
+        if (-0.25 < poseResult.x && poseResult.x < 0.25) {
             status = STATUS_NONE;
         }
-        break;
-    case STATUS_MOVING_RIGHT:
-        if (poseResult.x > -0.1) {
-            status = STATUS_NONE;
+        if (poseResult.armLeftRaised) {
+            status = STATUS_MOVING_BACKWARD;
+        }
+        if (poseResult.armLeftForward) {
+            status = STATUS_MOVING_STOP;
+        }
+        if (poseResult.crunching) {
+            status = STATUS_MOVING_STOP;
         }
         break;
     case STATUS_MOVING_BACKWARD:

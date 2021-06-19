@@ -161,6 +161,13 @@ int32_t ImageProcessor_process(cv::Mat* mat, OUTPUT_PARAM* outputParam)
 
 void drawPose(cv::Mat& mat, const std::vector<std::pair<float, float>> jointList, std::vector<float> scoreList)
 {
+#if 1
+	float maskSize = std::abs(jointList[3].first - jointList[4].first);
+	int32_t maskX0 = static_cast<int32_t>((jointList[0].first - maskSize) * mat.cols);
+	int32_t maskY0 = static_cast<int32_t>((jointList[0].second - maskSize) * mat.rows);
+	cv::rectangle(mat, cv::Rect(maskX0, maskY0, static_cast<int32_t>(2 * maskSize * mat.cols), static_cast<int32_t>(2 * maskSize * mat.rows)), cv::Scalar(0, 0, 0), -1);
+#endif
+
 	constexpr float scoreThreshold = 0.2f;
 	int32_t jointNum = static_cast<int32_t>(jointList.size());
 

@@ -48,7 +48,7 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> jointLi
     if (armLength < 0) armLength = bodyLength;
     if (bodyLength < 0) bodyLength = armLength;
     const float armDistanceThreshold = armLength / 3;
-    const float bodyDistanceThreshold = bodyLength / 3;
+    const float bodyDistanceThreshold = bodyLength / 2;
 
     /*** Check arm raised ***/
     /* hand comes above sholder */
@@ -104,7 +104,7 @@ int32_t PoseAnalyzer::analyze(const std::vector<std::pair<float, float>> jointLi
     }
     if ( ((scoreList[14] > THRESHOLD_SCORE) && (GET_Y_POS(14) < waistY + bodyDistanceThreshold))
         || ((scoreList[13] > THRESHOLD_SCORE) && (GET_Y_POS(13) < waistY + bodyDistanceThreshold))
-        || (scoreList[13] + scoreList[14] + scoreList[15] + scoreList[16] < 4 * THRESHOLD_SCORE * 0.8f)) {
+        /* || (scoreList[13] + scoreList[14] + scoreList[15] + scoreList[16] < 4 * THRESHOLD_SCORE * 0.8f)*/ ) {
         currentResult.crunching = true;
     }
 
