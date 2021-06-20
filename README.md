@@ -1,11 +1,11 @@
 # Petoi Bittle Controlled by Pose
-- A project to control Petoi Bittle using human pose
+- A project to control Petoi Bittle by human pose
 - Human pose is estimated using MoveNet and TensorFlow Lite
 
 ![00_doc/pic.jpg](00_doc/pic.jpg)
 
 ## YouTube
-[![00_doc/youtube.jpg](00_doc/youtube.jpg)](https://www.youtube.com/watch?v=ZRhm6DueARo)
+[![00_doc/youtube.jpg](00_doc/youtube.jpg)](https://www.youtube.com/watch?v=l9wVppg12pg)
 
 
 ## System overview
